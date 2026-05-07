@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Relatório de Clipping</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 24px;
+        color: #1f2937;
+        background-color: #f8fafc;
+      }
+
+      h1 {
+        margin-bottom: 6px;
+      }
+
+      .subtitulo {
+        margin-top: 0;
+        color: #4b5563;
+      }
+
+      .resumo-geral {
+        margin: 20px 0;
+        font-weight: bold;
+      }
+
+      .noticias {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      }
+
+      .noticias th,
+      .noticias td {
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        vertical-align: top;
+        text-align: left;
+      }
+
+      .noticias th {
+        background: #eff6ff;
+      }
+
+      .titulo {
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .meta {
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.5;
+      }
+
+      .resumo {
+        margin: 8px 0 0;
+        color: #111827;
+      }
+
+      .link a {
+        color: #1d4ed8;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Relatório de Clipping</h1>
+    <p class="subtitulo">Monitoramento de notícias por palavra-chave</p>
+    <p class="resumo-geral">Total de notícias: {{ noticias|length }}</p>
+    <table class="noticias">
+      <thead>
+        <tr>
+          <th style="width: 38%">Notícia</th>
+          <th style="width: 22%">Contexto</th>
+          <th style="width: 20%">Datas</th>
+          <th style="width: 20%">Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for noticia in noticias %}
+      <tr>
+        <td>
+          <div class="titulo">{{ noticia.titulo }}</div>
+          <p class="resumo"></p>
+        </td>
+        <td class="meta">
+          <div><strong>Fonte:</strong> {{ noticia.fonte }}</div>
+          <div><strong>Palavra-chave:</strong> {{ noticia.palavra }}</div>
+        </td>
+        <td class="meta">
+          <div><strong>Publicação:</strong> {{ noticia.data_publicacao }}</div>
+          <div><strong>Inserção:</strong> {{ noticia.data_insercao }}</div>
+        </td>
+        <td class="link">
+          <a href="{{ noticia.link }}" target="_blank" rel="noopener noreferrer">Ler notícia</a>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "feeds": [
+    "https://g1.globo.com/rss/g1/",
+    "https://rss.cnnbrasil.com.br/rss/tecnologia",
+    "https://feeds.bbci.co.uk/portuguese/rss.xml"
+  ],
+  "palavras_chave": [
+    "IgesDF"
+  ],
+  "descobrir_feeds_automaticamente": true,
+  "limite_sites_por_palavra": 5,
+  "usar_busca_web_direta": false,
+  "limite_resultados_web_por_palavra": 5,
+  "usar_google_news_rss": true,
+  "limite_por_fonte": 5,
+  "dias_retroativos_minimos": 7,
+  "incluir_noticias_sem_data": false,
+  "abrir_dialogo_salvar_relatorio": true,
+  "openai_api_key": "",
+  "telegram_token": "",
+  "telegram_chat_id": ""
+}
