@@ -1,11 +1,10 @@
 {
-  "feeds": [
-    "https://g1.globo.com/rss/g1/",
-    "https://rss.cnnbrasil.com.br/rss/tecnologia",
-    "https://feeds.bbci.co.uk/portuguese/rss.xml"
-  ],
+  "feeds": [],
   "palavras_chave": [
-    "IgesDF"
+    "wordpress",
+    "vagas",
+    "desenvolvedor",
+    "programador"
   ],
   "descobrir_feeds_automaticamente": true,
   "limite_sites_por_palavra": 5,
@@ -13,8 +12,8 @@
   "limite_resultados_web_por_palavra": 5,
   "usar_google_news_rss": true,
   "limite_por_fonte": 5,
-  "dias_retroativos_minimos": 7,
-  "incluir_noticias_sem_data": false,
+  "dias_retroativos_minimos": 30,
+  "incluir_noticias_sem_data": true,
   "abrir_dialogo_salvar_relatorio": true,
   "openai_api_key": "",
   "telegram_token": "",

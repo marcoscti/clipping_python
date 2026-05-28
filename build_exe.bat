@@ -25,7 +25,7 @@ if not exist "assets\configurador.ico" (
 )
 
 echo [3/4] Gerando executavel do clipping...
-call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\configurador.ico" --name clipping_app --add-data "templates;templates" launcher.py
+call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\configurador.ico" --name clipping_app launcher.py
 if errorlevel 1 goto :erro
 
 echo [4/4] Gerando executavel do configurador...

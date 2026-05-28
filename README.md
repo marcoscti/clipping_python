@@ -47,13 +47,8 @@ python interface_config.py
 
 ## Relatório com opção "Salvar Como"
 
-Ao final da execução, o sistema gera `output/relatorio_final.html` e abre um diálogo para você escolher outro local para salvar uma cópia do HTML.
-
-Se quiser desativar essa janela, no `config.json` defina:
-
-```json
-"abrir_dialogo_salvar_relatorio": false
-```
+Ao final da execução, o sistema abre automaticamente um diálogo "Salvar Como" para que você escolha onde salvar a planilha Excel (.xlsx). O nome do arquivo sugerido segue o padrão `dia-mes-ano-relatorio.xlsx`.
+O uso de banco de dados SQLite e a pasta `output` foram removidos em favor deste fluxo direto.
 
 ## Gerar executável (.exe)
 

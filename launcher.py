@@ -50,8 +50,9 @@ def iniciar_app():
                 elif tipo == "fim":
                     barra_progresso.stop()
                     barra_progresso.pack_forget()
-                    atualizar_status("Execução concluída. Fechando janela...")
-                    root.after(1200, root.destroy)
+                    atualizar_status("Execução concluída.")
+                    btn_configurar.config(state=tk.NORMAL)
+                    btn_executar.config(state=tk.NORMAL)
         except Empty:
             pass
         finally:

@@ -1,6 +1,6 @@
-feedparser
+jinja2
 requests
 beautifulsoup4
-jinja2
+feedparser
 openai
-python-dotenv
+pyinstaller

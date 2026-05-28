@@ -1,92 +1,67 @@
-from jinja2 import Environment, FileSystemLoader
-from database import listar_noticias
-from pathlib import Path
+import pandas as pd
 from datetime import datetime
-from shutil import copyfile
-import sys
 from tkinter import Tk, filedialog
 
-from config import ABRIR_DIALOGO_SALVAR_RELATORIO
+def gerar_relatorio(noticias_brutas):
+    """
+    Recebe uma lista de notícias e gera uma planilha Excel (.xlsx).
+    """
+    if not noticias_brutas:
+        print("Nenhuma notícia para exportar.")
+        return
 
-APP_DIR = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent
-BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", APP_DIR))
+    noticias_processadas = []
 
-TEMPLATES_DIR = BUNDLE_DIR / "templates"
-OUTPUT_DIR = APP_DIR / "output"
+    for item in noticias_brutas:
+        # Extração segura de dados independente do formato
+        titulo = item.get("titulo")
+        link = item.get("link")
+        resumo = item.get("resumo")
+        palavra = item.get("palavra")
+        fonte = item.get("fonte")
+        data_pub = item.get("data_publicacao")
+        data_ins = item.get("data_insercao", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-OUTPUT_DIR.mkdir(exist_ok=True)
-
-
-def gerar_relatorio():
-
-    noticias_brutas = listar_noticias()
-    noticias = []
-
-    for titulo, link, resumo, palavra, fonte, data_publicacao, data_insercao in noticias_brutas:
-        data_publicacao_formatada = "-"
-        if data_publicacao:
+        # Formatação de data de publicação
+        data_pub_fmt = "-"
+        if data_pub:
             try:
-                data_publicacao_formatada = datetime.fromisoformat(
-                    data_publicacao.replace("Z", "+00:00")
-                ).strftime("%d/%m/%Y %H:%M")
-            except ValueError:
-                data_publicacao_formatada = data_publicacao
+                if hasattr(data_pub, "strftime"):
+                    data_pub_fmt = data_pub.strftime("%d/%m/%Y %H:%M")
+                else:
+                    data_pub_fmt = datetime.fromisoformat(str(data_pub).replace("Z", "+00:00")).strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                data_pub_fmt = str(data_pub)
 
-        data_insercao_formatada = data_insercao
-        if data_insercao:
-            try:
-                data_insercao_formatada = datetime.strptime(
-                    data_insercao,
-                    "%Y-%m-%d %H:%M:%S"
-                ).strftime("%d/%m/%Y %H:%M")
-            except ValueError:
-                pass
-
-        noticias.append({
-            "titulo": titulo,
-            "link": link,
-            "resumo": resumo,
-            "palavra": palavra,
-            "fonte": fonte or "Fonte não informada",
-            "data_publicacao": data_publicacao_formatada,
-            "data_insercao": data_insercao_formatada or "-",
+        noticias_processadas.append({
+            "Título": titulo,
+            "Link": link,
+            "Resumo": resumo,
+            "Palavra-Chave": palavra,
+            "Fonte": fonte or "Não informada",
+            "Data Publicação": data_pub_fmt,
+            "Data Coleta": data_ins
         })
 
-    env = Environment(
-        loader=FileSystemLoader(TEMPLATES_DIR)
-    )
+    df = pd.DataFrame(noticias_processadas)
+    
+    # Nome conforme solicitado: dia-mes-ano-relatorio.xlsx
+    nome_sugerido = datetime.now().strftime("%d-%m-%Y-relatorio.xlsx")
 
-    template = env.get_template("relatorio.html")
+    try:
+        root = Tk()
+        root.withdraw()
+        root.attributes("-topmost", True) # Garante que a janela apareça na frente
+        destino = filedialog.asksaveasfilename(
+            title="Salvar relatório Excel",
+            defaultextension=".xlsx",
+            initialfile=nome_sugerido,
+            filetypes=[("Planilha Excel", "*.xlsx"), ("Todos os arquivos", "*.*")],
+        )
+        root.destroy()
 
-    html = template.render(
-        noticias=noticias
-    )
-
-    output_file = OUTPUT_DIR / "relatorio_final.html"
-
-    with open(
-        output_file,
-        "w",
-        encoding="utf-8"
-    ) as arquivo:
-
-        arquivo.write(html)
-
-    print(f"Relatório gerado: {output_file}")
-
-    if ABRIR_DIALOGO_SALVAR_RELATORIO:
-        try:
-            root = Tk()
-            root.withdraw()
-            destino = filedialog.asksaveasfilename(
-                title="Salvar relatório HTML",
-                defaultextension=".html",
-                initialfile="relatorio_final.html",
-                filetypes=[("Arquivo HTML", "*.html"), ("Todos os arquivos", "*.*")],
-            )
-            root.destroy()
-            if destino:
-                copyfile(output_file, destino)
-                print(f"Relatório salvo também em: {destino}")
-        except Exception:
-            print("Não foi possível abrir o diálogo de salvar relatório.")
+        if destino:
+            df.to_excel(destino, index=False)
+            print(f"Relatório salvo com sucesso em: {destino}")
+    except Exception as e:
+        print(f"Erro ao salvar arquivo Excel: {e}")

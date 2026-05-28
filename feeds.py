@@ -1,9 +1,12 @@
+import json
+import requests
 import feedparser
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlparse
 
 from config import (
+    CONFIG_PATH,
     DESCOBRIR_FEEDS_AUTOMATICAMENTE,
     FEEDS,
     LIMITE_SITES_POR_PALAVRA,
@@ -15,6 +18,18 @@ from config import (
 from busca_web import buscar_noticias_web
 from descoberta_feeds import descobrir_feeds
 from google_news import gerar_feeds_google_news
+
+
+def _resolver_link(url):
+    """Resolve redirecionamentos (especialmente do Google News) para obter a URL original do site."""
+    if url and "news.google.com" in url:
+        try:
+            # stream=True evita baixar o corpo da página, pegamos apenas o cabeçalho final
+            response = requests.get(url, allow_redirects=True, timeout=5, stream=True)
+            return response.url
+        except Exception:
+            return url
+    return url
 
 
 def _extrair_fonte(item, url_feed):
@@ -58,18 +73,34 @@ def _extrair_data_publicacao(item):
 
 
 def buscar_feeds():
-    noticias = []
-    feeds = list(FEEDS)
+    # Carrega a configuração atualizada do disco para evitar cache
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {}
 
-    if DESCOBRIR_FEEDS_AUTOMATICAMENTE:
+    # Usa os valores do arquivo ou mantém os padrões das constantes importadas
+    palavras_vivas = cfg.get("palavras_chave", PALAVRAS_CHAVE)
+    feeds_vivos = list(cfg.get("feeds", FEEDS))
+    descobrir_auto = cfg.get("descobrir_feeds_automaticamente", DESCOBRIR_FEEDS_AUTOMATICAMENTE)
+    limite_sites = cfg.get("limite_sites_por_palavra", LIMITE_SITES_POR_PALAVRA)
+    usar_google = cfg.get("usar_google_news_rss", USAR_GOOGLE_NEWS_RSS)
+    usar_web = cfg.get("usar_busca_web_direta", USAR_BUSCA_WEB_DIRETA)
+    limite_web = cfg.get("limite_resultados_web_por_palavra", LIMITE_RESULTADOS_WEB_POR_PALAVRA)
+
+    noticias = []
+    feeds = feeds_vivos
+
+    if descobrir_auto:
         feeds_automaticos = descobrir_feeds(
-            PALAVRAS_CHAVE,
-            limite_sites_por_palavra=LIMITE_SITES_POR_PALAVRA
+            palavras_vivas,
+            limite_sites_por_palavra=limite_sites
         )
         feeds.extend(feeds_automaticos)
 
-    if USAR_GOOGLE_NEWS_RSS:
-        feeds.extend(gerar_feeds_google_news(PALAVRAS_CHAVE))
+    if usar_google:
+        feeds.extend(gerar_feeds_google_news(palavras_vivas))
 
     feeds_unicos = list(dict.fromkeys(feeds))
 
@@ -79,17 +110,17 @@ def buscar_feeds():
         for item in feed.entries:
             noticias.append({
                 "titulo": item.title,
-                "link": item.link,
+                "link": _resolver_link(item.link),
                 "descricao": getattr(item, "summary", ""),
                 "fonte": _extrair_fonte(item, url),
                 "data_publicacao": _extrair_data_publicacao(item),
             })
 
-    if USAR_BUSCA_WEB_DIRETA:
+    if usar_web:
         noticias.extend(
             buscar_noticias_web(
-                PALAVRAS_CHAVE,
-                limite_por_palavra=LIMITE_RESULTADOS_WEB_POR_PALAVRA
+                palavras_vivas,
+                limite_por_palavra=limite_web
             )
         )
 

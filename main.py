@@ -1,9 +1,11 @@
+import json
+from datetime import datetime
 from feeds import buscar_feeds
 from filtro import filtrar_noticias
 from resumo_ia import gerar_resumo
-from database import salvar_noticia
 from relatorio import gerar_relatorio
 from telegram_bot import enviar_telegram
+from config import CONFIG_PATH
 
 
 def executar_clipping(status_callback=None):
@@ -14,9 +16,22 @@ def executar_clipping(status_callback=None):
             print(mensagem)
 
     notificar("Iniciando clipping...")
+    
+    # Carrega config para log de conferência
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+            palavras = cfg.get("palavras_chave", [])
+            notificar(f"Palavras-chave atuais: {', '.join(palavras[:3])}...")
+    except: pass
+
     noticias = buscar_feeds()
+    notificar(f"Total de notícias coletadas: {len(noticias)}")
+    
     filtradas = filtrar_noticias(noticias)
-    notificar(f"{len(filtradas)} notícias encontradas")
+    notificar(f"{len(filtradas)} notícias filtradas com sucesso.")
+
+    lista_para_relatorio = []
 
     for noticia in filtradas:
         resumo = gerar_resumo(
@@ -25,14 +40,11 @@ def executar_clipping(status_callback=None):
             noticia["descricao"]
         )
 
-        salvar_noticia(
-            noticia["titulo"],
-            noticia["link"],
-            resumo,
-            noticia["palavra"],
-            noticia.get("fonte"),
-            noticia.get("data_publicacao"),
-        )
+        # Acumula os dados para o Excel, já que não usamos mais SQLite
+        dados_noticia = noticia.copy()
+        dados_noticia["resumo"] = resumo
+        dados_noticia["data_insercao"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        lista_para_relatorio.append(dados_noticia)
 
         mensagem = f"""
 📰 {noticia['titulo']}
@@ -48,8 +60,11 @@ def executar_clipping(status_callback=None):
 
         enviar_telegram(mensagem)
 
-    notificar("Gerando relatório...")
-    gerar_relatorio()
+    if lista_para_relatorio:
+        notificar("Gerando relatório Excel...")
+        gerar_relatorio(lista_para_relatorio)
+    else:
+        notificar("Aviso: Nenhuma notícia condizente com os filtros foi encontrada.")
     notificar("Processo finalizado")
 
 

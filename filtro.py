@@ -1,14 +1,10 @@
+import json
 import unicodedata
 from datetime import UTC, datetime, timedelta
 
 from bs4 import BeautifulSoup
 
-from config import (
-    DIAS_RETROATIVOS_MINIMOS,
-    INCLUIR_NOTICIAS_SEM_DATA,
-    LIMITE_POR_FONTE,
-    PALAVRAS_CHAVE,
-)
+from config import CONFIG_PATH
 
 
 def _normalizar_texto(texto):
@@ -36,13 +32,25 @@ def _gerar_variacoes(palavra):
 
 
 def filtrar_noticias(noticias):
+    # Carrega a configuração do disco para garantir que alterações na UI sejam aplicadas imediatamente
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {}
+
+    dias_retro = cfg.get("dias_retroativos_minimos", 7)
+    incluir_sem_data = cfg.get("incluir_noticias_sem_data", False)
+    limite_fonte = cfg.get("limite_por_fonte", 5)
+    palavras_chave = cfg.get("palavras_chave", [])
+
     resultados = []
-    limite_data = datetime.now(UTC) - timedelta(days=DIAS_RETROATIVOS_MINIMOS)
+    limite_data = datetime.now(UTC) - timedelta(days=dias_retro)
     contador_por_fonte = {}
 
     for noticia in noticias:
         data_publicacao = noticia.get("data_publicacao")
-        if data_publicacao is None and not INCLUIR_NOTICIAS_SEM_DATA:
+        if data_publicacao is None and not incluir_sem_data:
             continue
 
         if data_publicacao is not None:
@@ -57,11 +65,11 @@ def filtrar_noticias(noticias):
             noticia["descricao"]
         )
 
-        for palavra in PALAVRAS_CHAVE:
+        for palavra in palavras_chave:
             variacoes = _gerar_variacoes(palavra)
             if any(variacao in texto for variacao in variacoes):
                 fonte = noticia.get("fonte") or "fonte_desconhecida"
-                if contador_por_fonte.get(fonte, 0) >= LIMITE_POR_FONTE:
+                if contador_por_fonte.get(fonte, 0) >= limite_fonte:
                     break
 
                 noticia["palavra"] = palavra

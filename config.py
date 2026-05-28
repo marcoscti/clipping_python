@@ -13,10 +13,9 @@ DEFAULT_CONFIG = {
         "https://feeds.bbci.co.uk/portuguese/rss.xml",
     ],
     "palavras_chave": [
-        "IgesDF",
-        "IGES-DF",
-        "Instituto de Gestão Estratégica de Saúde do DF",
-        "Instituto de Gestão Estratégica de Saúde do Distrito Federal",
+         "Desenvolvedor Wordpress",
+         "wordpress",
+         "programador wordpress"
     ],
     "descobrir_feeds_automaticamente": True,
     "limite_sites_por_palavra": 5,
