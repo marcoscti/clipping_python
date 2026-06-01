@@ -2,6 +2,7 @@ import json
 import tkinter as tk
 from tkinter import messagebox
 
+from app_icon import carregar_icone
 from config import CONFIG_PATH, DEFAULT_CONFIG, salvar_configuracao
 
 
@@ -53,6 +54,7 @@ def criar_interface(parent=None):
         root.transient(parent)
         root.grab_set()
     root.title("Configuração do Clipping")
+    carregar_icone(root)
     root.geometry("820x730")
 
     frame = tk.Frame(root, padx=12, pady=12)
@@ -127,6 +129,11 @@ def criar_interface(parent=None):
         entrada.insert(0, str(config.get(campo, DEFAULT_CONFIG[campo])))
         campos_numericos[campo] = entrada
 
+    tk.Label(frame, text="Região desejada:").pack(anchor="w")
+    entrada_regiao = tk.Entry(frame)
+    entrada_regiao.pack(fill="x", pady=(0, 10))
+    entrada_regiao.insert(0, str(config.get("regiao", DEFAULT_CONFIG["regiao"])))
+
     vars_bool = {}
     for campo, label in [
         ("descobrir_feeds_automaticamente", "Descobrir feeds automaticamente"),
@@ -155,6 +162,7 @@ def criar_interface(parent=None):
                 ].get(),
                 "usar_google_news_rss": vars_bool["usar_google_news_rss"].get(),
                 "incluir_noticias_sem_data": vars_bool["incluir_noticias_sem_data"].get(),
+                "regiao": entrada_regiao.get().strip(),
                 "abrir_dialogo_salvar_relatorio": vars_bool[
                     "abrir_dialogo_salvar_relatorio"
                 ].get(),

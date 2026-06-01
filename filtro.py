@@ -43,6 +43,7 @@ def filtrar_noticias(noticias):
     incluir_sem_data = cfg.get("incluir_noticias_sem_data", False)
     limite_fonte = cfg.get("limite_por_fonte", 5)
     palavras_chave = cfg.get("palavras_chave", [])
+    regiao = cfg.get("regiao", "").strip()
 
     resultados = []
     limite_data = datetime.now(UTC) - timedelta(days=dias_retro)
@@ -64,6 +65,16 @@ def filtrar_noticias(noticias):
             " " +
             noticia["descricao"]
         )
+
+        if regiao:
+            texto_regiao = texto + " " + _normalizar_texto(noticia.get("fonte", ""))
+            regiao_norm = _normalizar_texto(regiao)
+            if not all(
+                token
+                for token in regiao_norm.split()
+                if token and token in texto_regiao
+            ):
+                continue
 
         for palavra in palavras_chave:
             variacoes = _gerar_variacoes(palavra)

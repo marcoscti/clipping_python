@@ -1,9 +1,10 @@
 import json
 import requests
 import feedparser
+from bs4 import BeautifulSoup
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from config import (
     CONFIG_PATH,
@@ -12,6 +13,7 @@ from config import (
     LIMITE_SITES_POR_PALAVRA,
     LIMITE_RESULTADOS_WEB_POR_PALAVRA,
     PALAVRAS_CHAVE,
+    REGIAO,
     USAR_GOOGLE_NEWS_RSS,
     USAR_BUSCA_WEB_DIRETA,
 )
@@ -20,15 +22,77 @@ from descoberta_feeds import descobrir_feeds
 from google_news import gerar_feeds_google_news
 
 
+def _extrair_url_de_query(url):
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+    for chave in ("url", "q", "uddg"):
+        if chave in query and query[chave]:
+            return query[chave][0]
+    return None
+
+
+def _is_redirecionador_google(url):
+    return any(domain in url for domain in ["news.google.com", "google.com/url", "duckduckgo.com/l/"])
+
+
+def _extrair_link_real_google_news(response):
+    try:
+        html = response.content.decode("utf-8", errors="ignore")
+        soup = BeautifulSoup(html, "html.parser")
+
+        canonical = soup.find("link", rel="canonical")
+        if canonical and canonical.get("href"):
+            href = canonical["href"]
+            if href and not _is_redirecionador_google(href):
+                return href
+
+        for meta_name in ("og:url",):
+            meta = soup.find("meta", property=meta_name)
+            if meta and meta.get("content"):
+                href = meta["content"]
+                if href and not _is_redirecionador_google(href):
+                    return href
+
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if not href.startswith("http"):
+                continue
+            if _is_redirecionador_google(href):
+                query_url = _extrair_url_de_query(href)
+                if query_url:
+                    return query_url
+                continue
+            return href
+    except Exception:
+        pass
+    return None
+
+
 def _resolver_link(url):
     """Resolve redirecionamentos (especialmente do Google News) para obter a URL original do site."""
-    if url and "news.google.com" in url:
+    if not url:
+        return url
+
+    if _is_redirecionador_google(url):
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            )
+        }
         try:
-            # stream=True evita baixar o corpo da página, pegamos apenas o cabeçalho final
-            response = requests.get(url, allow_redirects=True, timeout=5, stream=True)
-            return response.url
+            response = requests.get(url, allow_redirects=True, timeout=12, headers=headers)
+            final_url = response.url
+            if not _is_redirecionador_google(final_url):
+                return final_url
+
+            real_url = _extrair_link_real_google_news(response)
+            if real_url:
+                return real_url
+            return final_url
         except Exception:
             return url
+
     return url
 
 
@@ -88,6 +152,7 @@ def buscar_feeds():
     usar_google = cfg.get("usar_google_news_rss", USAR_GOOGLE_NEWS_RSS)
     usar_web = cfg.get("usar_busca_web_direta", USAR_BUSCA_WEB_DIRETA)
     limite_web = cfg.get("limite_resultados_web_por_palavra", LIMITE_RESULTADOS_WEB_POR_PALAVRA)
+    regiao = cfg.get("regiao", REGIAO)
 
     noticias = []
     feeds = feeds_vivos
@@ -100,7 +165,7 @@ def buscar_feeds():
         feeds.extend(feeds_automaticos)
 
     if usar_google:
-        feeds.extend(gerar_feeds_google_news(palavras_vivas))
+        feeds.extend(gerar_feeds_google_news(palavras_vivas, regiao=regiao))
 
     feeds_unicos = list(dict.fromkeys(feeds))
 
@@ -117,12 +182,13 @@ def buscar_feeds():
             })
 
     if usar_web:
-        noticias.extend(
-            buscar_noticias_web(
-                palavras_vivas,
-                limite_por_palavra=limite_web
-            )
+        noticias_web = buscar_noticias_web(
+            palavras_vivas,
+            limite_por_palavra=limite_web
         )
+        for n in noticias_web:
+            n["link"] = _resolver_link(n.get("link"))
+        noticias.extend(noticias_web)
 
     noticias_unicas = []
     links_vistos = set()

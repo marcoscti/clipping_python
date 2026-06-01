@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
     "limite_por_fonte": 5,
     "dias_retroativos_minimos": 7,
     "incluir_noticias_sem_data": False,
+    "regiao": "",
     "abrir_dialogo_salvar_relatorio": True,
     "openai_api_key": "",
     "telegram_token": "",
@@ -71,6 +72,7 @@ USAR_GOOGLE_NEWS_RSS = _CONFIG["usar_google_news_rss"]
 LIMITE_POR_FONTE = _CONFIG["limite_por_fonte"]
 DIAS_RETROATIVOS_MINIMOS = _CONFIG["dias_retroativos_minimos"]
 INCLUIR_NOTICIAS_SEM_DATA = _CONFIG["incluir_noticias_sem_data"]
+REGIAO = _CONFIG["regiao"]
 ABRIR_DIALOGO_SALVAR_RELATORIO = _CONFIG["abrir_dialogo_salvar_relatorio"]
 OPENAI_API_KEY = _CONFIG["openai_api_key"]
 TELEGRAM_TOKEN = _CONFIG["telegram_token"]

@@ -1,19 +1,20 @@
 {
   "feeds": [],
   "palavras_chave": [
-    "wordpress",
-    "vagas",
-    "desenvolvedor",
-    "programador"
+    "Igesdf",
+    "Iges-df",
+    "Instituto de Gestão estratégica de saúde do distrito federal",
+    "UPA"
   ],
   "descobrir_feeds_automaticamente": true,
-  "limite_sites_por_palavra": 5,
+  "limite_sites_por_palavra": 10,
   "usar_busca_web_direta": false,
   "limite_resultados_web_por_palavra": 5,
   "usar_google_news_rss": true,
-  "limite_por_fonte": 5,
-  "dias_retroativos_minimos": 30,
+  "limite_por_fonte": 10,
+  "dias_retroativos_minimos": 15,
   "incluir_noticias_sem_data": true,
+  "regiao": "Brasília/DF",
   "abrir_dialogo_salvar_relatorio": true,
   "openai_api_key": "",
   "telegram_token": "",

@@ -4,6 +4,7 @@ from tkinter import messagebox
 from queue import Empty, Queue
 from threading import Thread
 
+from app_icon import carregar_icone
 from interface_config import criar_interface
 from main import executar_clipping
 
@@ -11,6 +12,7 @@ from main import executar_clipping
 def iniciar_app():
     root = tk.Tk()
     root.title("Clipping")
+    carregar_icone(root)
     root.geometry("520x320")
     root.resizable(False, False)
 

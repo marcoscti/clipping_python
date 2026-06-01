@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+
+ICON_FILE = os.path.join('assets', 'logo.icns') if os.path.exists(os.path.join('assets', 'logo.icns')) else os.path.join('assets', 'logo.ico')
 
 a = Analysis(
     ['launcher.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates')],
+    datas=[('templates', 'templates'), ('assets', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +38,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets\\configurador.ico'],
+    icon=ICON_FILE,
 )

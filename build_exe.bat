@@ -19,17 +19,17 @@ if errorlevel 1 goto :erro
 
 if not exist "assets" mkdir "assets"
 
-if not exist "assets\configurador.ico" (
-  echo [ERRO] Icone do configurador nao encontrado: assets\configurador.ico
+if not exist "assets\logo.ico" (
+  echo [ERRO] Icone do configurador nao encontrado: assets\logo.ico
   exit /b 1
 )
 
 echo [3/4] Gerando executavel do clipping...
-call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\configurador.ico" --name clipping_app launcher.py
+call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\logo.ico" --name clipping_app launcher.py
 if errorlevel 1 goto :erro
 
 echo [4/4] Gerando executavel do configurador...
-call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\configurador.ico" --name configurador interface_config.py
+call "venv\Scripts\python.exe" -m PyInstaller --onefile --windowed --icon "assets\logo.ico" --name configurador interface_config.py
 if errorlevel 1 goto :erro
 
 if not exist "dist\clipping_app.exe" (
